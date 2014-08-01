@@ -1,0 +1,25 @@
+---
+title: "conditions"
+author: "Matthew Shane Loop"
+date: "June 18, 2014"
+output: html_document
+---
+
+_Author: Matthew Shane Loop_
+
+_Purpose: Generate a file listing all conditions to be used in the type 1 error simulation study for JSM._
+
+```{r conditions}
+kappa <- c(.001, .01)
+A <- c(52419, 3794000)
+p <- c(0.1, 0.6)
+tests <- c(10, 50, 100)
+simulation <- list(kappa = kappa, A = A, p = p, tests = tests)
+simulation <- expand.grid(simulation)
+condition <- seq(1, 24, 1)
+simulation <- data.frame(condition, simulation)
+conditions <- simulation[which(simulation$kappa == 0.001 & simulation$p == 0.1 & simulation$A == 52419), ]
+conditions
+
+write.table(conditions, "conditions.txt", sep = "\t", row.names = FALSE)
+```

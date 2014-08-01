@@ -1,0 +1,44 @@
+#!/bin/bash
+#$ -cwd
+#$ -j n
+#$ -N stitch
+#$ -M loop2@uab.edu
+#$ -e stitch.err
+#$ -o stitch.out
+#$ -l h_rt=48:00:00
+#$ -l vf=5G
+
+. /etc/profile.d/modules.sh
+
+module load R/R-3.0.1
+#$ -v PATH,R_HOME,R_LIBS,LD_LIBRARY_PATH,CWD
+
+# Count number of files
+date
+file_count=`ls results-*-*.txt | wc -l`
+echo "Total number of array job output files= $file_count" 
+
+output_file_format="results-*-*.txt"
+
+# Checking that number of rows in each output file from simulation.R is correct.
+# The only three possible values should be 11, 51, and 101
+for f in $output_file_format; do
+	lc=`wc -l < $f`
+	{
+	if (( $lc != 11 && $lc != 51 && $lc != 101 )); then
+		echo "Error in $f: line count = $lc"
+		exit 0
+	fi
+	}
+done
+
+# $file_count variable value must match 3*number of iterations listed as B variable in stitch.R file
+if [ $file_count = 15000 ]
+then
+	echo "merging the outputs ...."
+	`R CMD BATCH --no-save --no-restore stitch.R`
+else	
+	echo "file count mismatch"
+fi
+echo "Done"
+date

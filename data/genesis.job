@@ -1,0 +1,24 @@
+# Type 1 error rate data generation
+
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -j n
+#$ -N genesis 
+#$ -M loop2@uab.edu 
+#$ -e run-genesis.err
+#$ -o run-genesis.out
+#$ -l h_rt=24:00:00 
+#$ -t 1-5000
+#$ -tc 500
+#$ -l vf=2G
+
+. /etc/profile.d/modules.sh
+
+module load R
+
+#$ -v PATH,R_HOME,R_LIBS,LD_LIBRARY_PATH,CWD
+
+date
+R CMD BATCH --no-save --no-restore  '--args i='$SGE_TASK_ID genesis.R 
+date

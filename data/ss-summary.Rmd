@@ -1,0 +1,33 @@
+---
+title: "average-ss"
+author: "Matthew Shane Loop"
+date: "July 22, 2014"
+output: html_document
+---
+
+Purpose: Summarize the sample sizes of the datasets created for the simulation
+```{r conditions}
+simulation <- read.table("conditions.txt", sep = "\t", header = TRUE)
+jsm <- simulation[which(simulation$kappa == 0.001 & simulation$p == 0.1 & simulation$A == 52419), ]
+```
+
+```{r import-data}
+# Number of replicates
+B <- 5000
+
+# Stitch results together into one file
+ss <- vector()
+for(j in 1:nrow(jsm)){
+  for(i in 1:B){
+  data <- read.table(file = paste("datasets/c-", jsm$condition[j], "/", i, ".txt", sep = ""), sep = "\t", header = T)
+  ss <- c(ss, nrow(data))
+}
+}
+```
+
+```{r summarize}
+mean(ss)
+sd(ss)
+max(ss)
+min(ss)
+```

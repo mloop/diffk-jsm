@@ -1,0 +1,20 @@
+#!/bin/bash
+#$ -cwd
+#$ -j n
+#$ -N simulation
+#$ -M loop2@uab.edu
+#$ -e simulation.err
+#$ -o simulation.out
+#$ -l h_rt=50:00:00
+#$ -t 1-5000
+#$ -tc 100 
+#$ -l vf=5G
+
+. /etc/profile.d/modules.sh
+
+module load R/R-3.0.1
+#$ -v PATH,R_HOME,R_LIBS,LD_LIBRARY_PATH,CWD
+
+date
+R CMD BATCH --no-save --no-restore '--args i='$SGE_TASK_ID simulation.R
+date

@@ -1,0 +1,73 @@
+---
+output:
+  html_document:
+    self_contained: no
+    theme: cosmo
+---
+# JSM analysis
+*Author: Matthew Shane Loop*
+
+*Purpose: Summarize the results of the type 1 error rate simulation for the $K$ test, using only the conditions for the 2014 JSM presentation. Estimate the overall empirical type 1 error rate, and make a plot of the error rates at each range.*
+
+## Load packages and data
+```{r packages}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r data}
+jsm <- read.table(file = "results.txt", sep = "\t", header = TRUE)
+jsm <- tbl_df(jsm)
+jsm
+```
+
+## Overall type 1 error rate
+The observed type 1 error rates for each condition are
+```{r overall-rate,dpi=300,out.height='600px',out.width='1000px',fig.align='center'}
+jsm_t <- group_by(jsm, tests)
+alpha_hat_t <- (summarise(jsm_t,
+                        n = n(),
+                       alpha = mean(reject)
+                       ))
+alpha_hat_t <- mutate(alpha_hat_t,
+       ci_low = alpha - 1.96*sqrt(alpha*(1-alpha)/n),
+       ci_high = alpha + 1.96*sqrt(alpha*(1-alpha)/n))
+alpha_hat_t
+p <- ggplot(alpha_hat_t, aes(x = tests, y = alpha)) +
+    geom_point() +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.5) +
+    ggtitle("Empirical type 1 error rate vs. number of tests done") +
+    ylab(expression(hat(alpha))) +
+    theme_bw(base_size = 48, base_family = "") +
+    geom_hline(yintercept = 0.05, lty = 2) +
+    theme_bw() +
+    ylim(ymin = 0.04, ymax = 0.06) +
+    xlab("Number of tests")
+p
+```
+
+## Type 1 error rate at each range
+Now, let's take a look at the type 1 error rates per range tested.
+```{r rate-by-range,warning=FALSE,message=FALSE,dpi=300,out.width='900px',out.height='1000px',fig.align='center'}
+jsm_h <- group_by(jsm, tests, h)
+jsm_h$tests <- as.factor(jsm_h$tests)
+alpha_hat_h <- (summarise(jsm_h,
+                        n = n(),
+                       alpha = mean(reject)
+                       ))
+alpha_hat_h <- mutate(alpha_hat_h,
+       ci_low = alpha - 1.96*sqrt(alpha*(1-alpha)/n),
+       ci_high = alpha + 1.96*sqrt(alpha*(1-alpha)/n))
+
+p <- ggplot(alpha_hat_h, aes(x = h, y = alpha, label = tests)) +
+    geom_point() +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high)) +
+    ggtitle("Empirical type 1 error rate vs. range, by number of tests done") +
+    ylab(expression(hat(alpha))) +
+    theme_bw(base_size = 48, base_family = "") +
+    geom_hline(yintercept = 0.05, lty = 2) +
+    theme_bw() +
+    ylim(ymin = 0, ymax = 0.1) +
+    xlab("Range (miles)")
+p +facet_grid(tests ~ .)
+```
